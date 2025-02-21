@@ -234,15 +234,14 @@ fn main() -> anyhow::Result<()> {
                     return Ok(());
                 }
 
-                // LauncherState::PatchNotVerified |
-                // LauncherState::PredownloadAvailable { .. } |
-                // LauncherState::PatchUpdateAvailable => {
-                //     if just_run_game {
-                //         anime_launcher_sdk::wuwa::game::run().expect("Failed to run the game");
-                //
-                //         return Ok(());
-                //     }
-                // }
+                LauncherState::PatchNotVerified |
+                LauncherState::PatchUpdateAvailable => {
+                    if just_run_game {
+                        anime_launcher_sdk::wuwa::game::run().expect("Failed to run the game");
+
+                        return Ok(());
+                    }
+                }
 
                 _ => ()
             }
