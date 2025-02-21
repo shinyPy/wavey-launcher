@@ -517,18 +517,18 @@ impl SimpleAsyncComponent for GeneralApp {
 
             #[allow(unused_must_use)]
             GeneralAppMsg::UpdateLauncherStyle(style) => {
-                // if style == LauncherStyle::Classic && !KEEP_BACKGROUND_FILE.exists() {
-                //     if let Err(err) = crate::background::download_background() {
-                //         tracing::error!("Failed to download background picture");
+                if style == LauncherStyle::Classic && !KEEP_BACKGROUND_FILE.exists() {
+                    if let Err(err) = crate::background::download_background() {
+                        tracing::error!("Failed to download background picture");
 
-                //         sender.input(GeneralAppMsg::Toast {
-                //             title: tr!("background-downloading-failed"),
-                //             description: Some(err.to_string())
-                //         });
+                        sender.input(GeneralAppMsg::Toast {
+                            title: tr!("background-downloading-failed"),
+                            description: Some(err.to_string())
+                        });
 
-                //         return;
-                //     }
-                // }
+                        return;
+                    }
+                }
 
                 if let Ok(mut config) = Config::get() {
                     config.launcher.style = style;

@@ -642,7 +642,7 @@ impl SimpleComponent for App {
 
         tracing::info!("Main window initialized");
 
-        // let download_picture = model.style == LauncherStyle::Classic && !KEEP_BACKGROUND_FILE.exists();
+        let download_picture = model.style == LauncherStyle::Classic && !KEEP_BACKGROUND_FILE.exists();
 
         // Initialize some heavy tasks
         std::thread::spawn(move || {
@@ -652,18 +652,18 @@ impl SimpleComponent for App {
 
             // Download background picture if needed
 
-            // if download_picture {
-            //     tasks.push(std::thread::spawn(clone!(@strong sender => move || {
-            //         if let Err(err) = crate::background::download_background() {
-            //             tracing::error!("Failed to download background picture: {err}");
+            if download_picture {
+                tasks.push(std::thread::spawn(clone!(@strong sender => move || {
+                    if let Err(err) = crate::background::download_background() {
+                        tracing::error!("Failed to download background picture: {err}");
 
-            //             sender.input(AppMsg::Toast {
-            //                 title: tr!("background-downloading-failed"),
-            //                 description: Some(err.to_string())
-            //             });
-            //         }
-            //     })));
-            // }
+                        sender.input(AppMsg::Toast {
+                            title: tr!("background-downloading-failed"),
+                            description: Some(err.to_string())
+                        });
+                    }
+                })));
+            }
 
             // Update components index
 
