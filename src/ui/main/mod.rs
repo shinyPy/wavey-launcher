@@ -10,11 +10,10 @@ use adw::prelude::*;
 use gtk::glib::clone;
 
 mod repair_game;
-// mod update_patch;
+mod update_patch;
 mod download_wine;
 mod create_prefix;
 mod download_diff;
-mod install_vcrun2015;
 mod disable_telemetry;
 mod launch;
 
@@ -79,7 +78,7 @@ pub enum AppMsg {
 
     /// Supposed to be called automatically on app's run when the latest main patch version
     /// was retrieved from remote repos
-    // SetMainPatch(Option<(Version, JadeitePatchStatusVariant)>),
+    SetMainPatch(Option<(Version, JadeitePatchStatusVariant)>),
 
     /// Supposed to be called automatically on app's run when the launcher state was chosen
     SetLauncherState(Option<LauncherState>),
@@ -301,15 +300,12 @@ impl SimpleComponent for App {
                                         adw::ButtonContent {
                                             #[watch]
                                             set_icon_name: match &model.state {
-                                                Some(LauncherState::Launch) // |
-                                                // Some(LauncherState::PatchNotVerified) |
-                                                // Some(LauncherState::PatchConcerning) |
-                                                    => "media-playback-start-symbolic",
+                                                Some(LauncherState::Launch) |
+                                                Some(LauncherState::PatchNotVerified) |
+                                                Some(LauncherState::PatchConcerning) => "media-playback-start-symbolic",
 
-                                                // Some(LauncherState::PatchNotInstalled) |
-                                                // Some(LauncherState::PatchUpdateAvailable) => "document-save-symbolic",
-
-                                                Some(LauncherState::Vcrun2015NotInstalled) => "document-save-symbolic",
+                                                Some(LauncherState::PatchNotInstalled) |
+                                                Some(LauncherState::PatchUpdateAvailable) => "document-save-symbolic",
 
                                                 Some(LauncherState::TelemetryNotDisabled) => "security-high-symbolic",
 
@@ -319,25 +315,22 @@ impl SimpleComponent for App {
                                                 Some(LauncherState::GameUpdateAvailable(_)) |
                                                 Some(LauncherState::GameNotInstalled(_)) => "document-save-symbolic",
 
-                                                // Some(LauncherState::PatchBroken) |
-                                                // Some(LauncherState::PatchUnsafe) |
+                                                Some(LauncherState::PatchBroken) |
+                                                Some(LauncherState::PatchUnsafe) |
                                                 None => "window-close-symbolic"
                                             },
 
                                             #[watch]
                                             set_label: &match &model.state {
-                                                Some(LauncherState::Launch) => tr!("launch"),
-                                                // Some(LauncherState::PatchNotVerified) |
-                                                // Some(LauncherState::PatchConcerning)
+                                                Some(LauncherState::Launch) |
+                                                Some(LauncherState::PatchNotVerified) |
+                                                Some(LauncherState::PatchConcerning) => tr!("launch"),
 
-                                                // Some(LauncherState::PatchNotInstalled) |
-                                                // Some(LauncherState::PatchUpdateAvailable) => tr!("download-patch"),
+                                                Some(LauncherState::PatchNotInstalled) |
+                                                Some(LauncherState::PatchUpdateAvailable) => tr!("download-patch"),
 
-                                                // Some(LauncherState::PatchBroken) => tr!("patch-broken"),
-                                                // Some(LauncherState::PatchUnsafe) => tr!("patch-unsafe"),
-
-                                                // TODO: wouldn't hurt to translate right?
-                                                Some(LauncherState::Vcrun2015NotInstalled) => String::from("Install vcrun2015"),
+                                                Some(LauncherState::PatchBroken) => tr!("patch-broken"),
+                                                Some(LauncherState::PatchUnsafe) => tr!("patch-unsafe"),
 
                                                 Some(LauncherState::TelemetryNotDisabled) => tr!("disable-telemetry"),
 
@@ -370,8 +363,8 @@ impl SimpleComponent for App {
 
                                         #[watch]
                                         set_sensitive: !model.disabled_buttons && match &model.state {
-                                            // Some(LauncherState::PatchBroken) |
-                                            // Some(LauncherState::PatchUnsafe) => false,
+                                            Some(LauncherState::PatchBroken) |
+                                            Some(LauncherState::PatchUnsafe) => false,
 
                                             Some(_) => true,
                                             None => false
@@ -379,12 +372,12 @@ impl SimpleComponent for App {
 
                                         #[watch]
                                         set_css_classes: match &model.state {
-                                            // Some(LauncherState::PatchNotVerified) => &["warning", "pill"],
+                                            Some(LauncherState::PatchNotVerified) => &["warning", "pill"],
 
-                                            // Some(LauncherState::PatchBroken) |
-                                            // Some(LauncherState::PatchUnsafe) |
-                                            // Some(LauncherState::PatchConcerning)
-                                            //     => &["error", "pill"],
+                                            Some(LauncherState::PatchBroken) |
+                                            Some(LauncherState::PatchUnsafe) |
+                                            Some(LauncherState::PatchConcerning)
+                                                => &["error", "pill"],
 
                                             Some(_) => &["suggested-action", "pill"],
                                             None => &["pill"]
@@ -392,10 +385,10 @@ impl SimpleComponent for App {
 
                                         #[watch]
                                         set_tooltip_text: Some(&match &model.state {
-                                            // Some(LauncherState::PatchNotVerified) => tr!("patch-testing-tooltip"),
-                                            // Some(LauncherState::PatchBroken) => tr!("patch-broken-tooltip"),
-                                            // Some(LauncherState::PatchUnsafe) => tr!("patch-unsafe-tooltip"),
-                                            // Some(LauncherState::PatchConcerning) => tr!("patch-concerning-tooltip"),
+                                            Some(LauncherState::PatchNotVerified) => tr!("patch-testing-tooltip"),
+                                            Some(LauncherState::PatchBroken) => tr!("patch-broken-tooltip"),
+                                            Some(LauncherState::PatchUnsafe) => tr!("patch-unsafe-tooltip"),
+                                            Some(LauncherState::PatchConcerning) => tr!("patch-concerning-tooltip"),
 
                                             _ => String::new()
                                         }),
@@ -450,11 +443,11 @@ impl SimpleComponent for App {
                                             }
 
                                             // Old warning message which I don't really understand now:
-                                            // 
+                                            //
                                             // Doesn't work on all the systems
                                             // e.g. won't work if you didn't install wine system-wide
                                             // there's some reasons for it
-                                            // 
+                                            //
                                             // UPD: I've tried this, and the problem is that it's completely pointless
                                             //      For whatever reason it just doesn't work
 
@@ -726,28 +719,28 @@ impl SimpleComponent for App {
 
             tasks.push(std::thread::spawn(clone!(@strong sender => move || {
                 // Get main patch status
-                // sender.input(AppMsg::SetMainPatch(match jadeite::get_metadata() {
-                //     Ok(metadata) => {
-                //         let status = GAME.get_version()
-                //             .map(|version| metadata.games.hsr.global.get_status(version))
-                //             .unwrap_or(metadata.games.hsr.global.status);
-                //
-                //         Some((metadata.jadeite.version, status))
-                //     }
-                //
-                //     Err(err) => {
-                //         tracing::error!("Failed to fetch patch metadata: {err}");
-                //
-                //         sender.input(AppMsg::Toast {
-                //             title: tr!("patch-info-fetching-error"),
-                //             description: Some(err.to_string())
-                //         });
-                //
-                //         None
-                //     }
-                // }));
+                sender.input(AppMsg::SetMainPatch(match jadeite::get_metadata() {
+                    Ok(metadata) => {
+                        let status = GAME.get_version()
+                            .map(|version| metadata.games.hsr.global.get_status(version))
+                            .unwrap_or(metadata.games.hsr.global.status);
 
-                // tracing::info!("Updated patch status");
+                        Some((metadata.jadeite.version, status))
+                    }
+
+                    Err(err) => {
+                        tracing::error!("Failed to fetch patch metadata: {err}");
+
+                        sender.input(AppMsg::Toast {
+                            title: tr!("patch-info-fetching-error"),
+                            description: Some(err.to_string())
+                        });
+
+                        None
+                    }
+                }));
+
+                tracing::info!("Updated patch status");
             })));
 
             // Update initial game version status
@@ -814,9 +807,9 @@ impl SimpleComponent for App {
                                 sender.input(AppMsg::SetLoadingStatus(Some(Some(tr!("loading-launcher-state--game")))));
                             }
 
-                            // StateUpdating::Patch => {
-                            //     sender.input(AppMsg::SetLoadingStatus(Some(Some(tr!("loading-launcher-state--patch")))));
-                            // }
+                            StateUpdating::Patch => {
+                                sender.input(AppMsg::SetLoadingStatus(Some(Some(tr!("loading-launcher-state--patch")))));
+                            }
                         }
                     }
                 });
@@ -827,7 +820,7 @@ impl SimpleComponent for App {
                         tracing::error!("Failed to update launcher state: {err}");
 
                         self.toast(tr!("launcher-state-updating-error"), Some(err.to_string()));
-    
+
                         None
                     }
                 };
@@ -857,10 +850,10 @@ impl SimpleComponent for App {
                 PREFERENCES_WINDOW.as_ref().unwrap_unchecked().sender().send(PreferencesAppMsg::SetGameDiff(diff));
             }
 
-            // #[allow(unused_must_use)]
-            // AppMsg::SetMainPatch(patch) => unsafe {
-            //     PREFERENCES_WINDOW.as_ref().unwrap_unchecked().sender().send(PreferencesAppMsg::SetMainPatch(patch));
-            // }
+            #[allow(unused_must_use)]
+            AppMsg::SetMainPatch(patch) => unsafe {
+                PREFERENCES_WINDOW.as_ref().unwrap_unchecked().sender().send(PreferencesAppMsg::SetMainPatch(patch));
+            }
 
             AppMsg::SetLauncherState(state) => {
                 self.state = state;
@@ -898,14 +891,17 @@ impl SimpleComponent for App {
 
             AppMsg::PerformAction => unsafe {
                 match self.state.as_ref().unwrap_unchecked() {
-                    // LauncherState::PatchNotVerified |
-                    // LauncherState::PatchConcerning |
+                    LauncherState::PatchNotVerified |
+                    LauncherState::PatchConcerning |
+                    LauncherState::PatchBroken |
+                    LauncherState::PatchUnsafe |
+                    // LauncherState::PredownloadAvailable { patch: JadeitePatchStatusVariant::Verified, .. } |
+                    // LauncherState::PredownloadAvailable { patch: JadeitePatchStatusVariant::Unverified, .. } |
+                    // LauncherState::PredownloadAvailable { patch: JadeitePatchStatusVariant::Concerning, .. } |
                     LauncherState::Launch => launch::launch(sender),
 
-                    // LauncherState::PatchNotInstalled |
-                    // LauncherState::PatchUpdateAvailable => update_patch::update_patch(sender, self.progress_bar.sender().to_owned()),
-
-                    LauncherState::Vcrun2015NotInstalled => install_vcrun2015::install_vcrun2015(sender),
+                    LauncherState::PatchNotInstalled |
+                    LauncherState::PatchUpdateAvailable => update_patch::update_patch(sender, self.progress_bar.sender().to_owned()),
 
                     LauncherState::TelemetryNotDisabled => disable_telemetry::disable_telemetry(sender),
 

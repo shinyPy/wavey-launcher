@@ -24,7 +24,7 @@ pub struct GeneralApp {
     components_page: AsyncController<ComponentsPage>,
 
     game_diff: Option<VersionDiff>,
-    // main_patch: Option<(Version, JadeitePatchStatusVariant)>,
+    main_patch: Option<(Version, JadeitePatchStatusVariant)>,
 
     style: LauncherStyle,
     languages: Vec<String>
@@ -38,7 +38,7 @@ pub enum GeneralAppMsg {
 
     /// Supposed to be called automatically on app's run when the latest UnityPlayer patch version
     /// was retrieved from remote repos
-    // SetMainPatch(Option<(Version, JadeitePatchStatusVariant)>),
+    SetMainPatch(Option<(Version, JadeitePatchStatusVariant)>),
 
     UpdateDownloadedWine,
     UpdateDownloadedDxvk,
@@ -181,7 +181,7 @@ impl SimpleAsyncComponent for GeneralApp {
                                 config.launcher.language = crate::i18n::format_lang(SUPPORTED_LANGUAGES
                                     .get(row.selected() as usize)
                                     .unwrap_or(&SUPPORTED_LANGUAGES[0]));
-    
+
                                 Config::update(config);
                             }
                         }
@@ -452,7 +452,7 @@ impl SimpleAsyncComponent for GeneralApp {
                 .forward(sender.input_sender(), std::convert::identity),
 
             game_diff: None,
-            // main_patch: None,
+            main_patch: None,
 
             style: CONFIG.launcher.style,
             languages: SUPPORTED_LANGUAGES.iter().map(|lang| tr!(format_lang(lang).as_str())).collect()
@@ -473,9 +473,9 @@ impl SimpleAsyncComponent for GeneralApp {
                 self.game_diff = diff;
             }
 
-            // GeneralAppMsg::SetMainPatch(patch) => {
-            //     self.main_patch = patch;
-            // }
+            GeneralAppMsg::SetMainPatch(patch) => {
+                self.main_patch = patch;
+            }
 
             GeneralAppMsg::UpdateDownloadedWine => {
                 self.components_page.sender()
