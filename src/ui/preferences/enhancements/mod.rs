@@ -362,6 +362,26 @@ impl SimpleAsyncComponent for EnhancementsApp {
                     }
                 },
 
+                adw::ActionRow {
+                    set_title: &tr!("fix-launch-dialog"),
+                    set_subtitle: &tr!("fix-launch-dialog-description"),
+                    add_suffix = &gtk::Switch {
+                        set_valign: gtk::Align::Center,
+
+                        set_active: CONFIG.game.enhancements.fix_launch_dialog,
+
+                        connect_state_notify => |switch| {
+                            if is_ready() {
+                                if let Ok(mut config) = Config::get() {
+                                    config.game.enhancements.fix_launch_dialog = switch.is_active();
+
+                                    Config::update(config);
+                                }
+                            }
+                        }
+                    }
+                },
+
                 adw::ComboRow {
                     set_title: &tr!("hud"),
 

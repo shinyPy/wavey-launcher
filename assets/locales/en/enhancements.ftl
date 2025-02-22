@@ -34,6 +34,9 @@ performance = Performance
 gamemode = Gamemode
 gamemode-description = Prioritize the game over the rest of the processes
 
+fix-launch-dialog = Fix blank launch dialog
+fix-launch-dialog-description = Applies a workaround for the blank launch dialog issue
+
 run-with-dx11 = Run with DX11
 run-with-dx11-description = Force the game to run with DirectX 11 (For compatibility)
 
