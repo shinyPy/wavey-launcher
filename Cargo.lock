@@ -99,7 +99,7 @@ dependencies = [
 [[package]]
 name = "anime-launcher-sdk"
 version = "1.26.0"
-source = "git+https://github.com/literallyfiro/anime-launcher-sdk?branch=main#0d996b12886155c299e215b45888db722302bdf7"
+source = "git+https://github.com/literallyfiro/anime-launcher-sdk?branch=main#436d40cbeb0137be2d256f050a4e15e5a6f4d387"
 dependencies = [
  "anime-game-core",
  "anyhow",

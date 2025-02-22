@@ -342,6 +342,26 @@ impl SimpleAsyncComponent for EnhancementsApp {
             add = &adw::PreferencesGroup {
                 set_title: &tr!("game"),
 
+                adw::ActionRow {
+                    set_title: &tr!("run-with-dx11"),
+                    set_subtitle: &tr!("run-with-dx11-description"),
+                    add_suffix = &gtk::Switch {
+                        set_valign: gtk::Align::Center,
+
+                        set_active: CONFIG.game.enhancements.dx11,
+
+                        connect_state_notify => |switch| {
+                            if is_ready() {
+                                if let Ok(mut config) = Config::get() {
+                                    config.game.enhancements.dx11 = switch.is_active();
+
+                                    Config::update(config);
+                                }
+                            }
+                        }
+                    }
+                },
+
                 adw::ComboRow {
                     set_title: &tr!("hud"),
 
