@@ -722,8 +722,8 @@ impl SimpleComponent for App {
                 sender.input(AppMsg::SetMainPatch(match jadeite::get_metadata() {
                     Ok(metadata) => {
                         let status = GAME.get_version()
-                            .map(|version| metadata.games.hsr.global.get_status(version))
-                            .unwrap_or(metadata.games.hsr.global.status);
+                            .map(|version| metadata.games.wuwa.global.get_status(version))
+                            .unwrap_or(metadata.games.wuwa.global.status);
 
                         Some((metadata.jadeite.version, status))
                     }
