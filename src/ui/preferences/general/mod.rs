@@ -281,45 +281,45 @@ impl SimpleAsyncComponent for GeneralApp {
                     }
                 },
 
-                // adw::ActionRow {
-                //     set_title: &tr!("player-patch-version"),
-                //     set_subtitle: &tr!("player-patch-version-description"),
-                //
-                //     add_suffix = &gtk::Label {
-                //         #[watch]
-                //         set_text: &match model.main_patch.as_ref() {
-                //             Some((version, _)) => version.to_string(),
-                //             None => String::from("?")
-                //         },
-                //
-                //         #[watch]
-                //         set_css_classes: match model.main_patch.as_ref() {
-                //             Some((_, status)) => match status {
-                //                 JadeitePatchStatusVariant::Verified => &["success"],
-                //                 JadeitePatchStatusVariant::Unverified => &["warning"],
-                //                 JadeitePatchStatusVariant::Broken => &["error"],
-                //                 JadeitePatchStatusVariant::Unsafe => &["error"],
-                //                 JadeitePatchStatusVariant::Concerning => &["error"]
-                //             }
-                //
-                //             None => &[]
-                //         },
-                //
-                //         #[watch]
-                //         set_tooltip_text: Some(&match model.main_patch.as_ref() {
-                //             Some((_, status)) => match status {
-                //                 JadeitePatchStatusVariant::Unverified => tr!("patch-testing-tooltip"),
-                //                 JadeitePatchStatusVariant::Broken => tr!("patch-broken-tooltip"),
-                //                 JadeitePatchStatusVariant::Unsafe => tr!("patch-unsafe-tooltip"),
-                //                 JadeitePatchStatusVariant::Concerning => tr!("patch-concerning-tooltip"),
-                //
-                //                 _ => String::new()
-                //             }
-                //
-                //             None => String::new()
-                //         })
-                //     }
-                // }
+                adw::ActionRow {
+                    set_title: &tr!("player-patch-version"),
+                    set_subtitle: &tr!("player-patch-version-description"),
+
+                    add_suffix = &gtk::Label {
+                        #[watch]
+                        set_text: &match model.main_patch.as_ref() {
+                            Some((version, _)) => version.to_string(),
+                            None => String::from("?")
+                        },
+
+                        #[watch]
+                        set_css_classes: match model.main_patch.as_ref() {
+                            Some((_, status)) => match status {
+                                JadeitePatchStatusVariant::Verified => &["success"],
+                                JadeitePatchStatusVariant::Unverified => &["warning"],
+                                JadeitePatchStatusVariant::Broken => &["error"],
+                                JadeitePatchStatusVariant::Unsafe => &["error"],
+                                JadeitePatchStatusVariant::Concerning => &["error"]
+                            }
+
+                            None => &[]
+                        },
+
+                        #[watch]
+                        set_tooltip_text: Some(&match model.main_patch.as_ref() {
+                            Some((_, status)) => match status {
+                                JadeitePatchStatusVariant::Unverified => tr!("patch-testing-tooltip"),
+                                JadeitePatchStatusVariant::Broken => tr!("patch-broken-tooltip"),
+                                JadeitePatchStatusVariant::Unsafe => tr!("patch-unsafe-tooltip"),
+                                JadeitePatchStatusVariant::Concerning => tr!("patch-concerning-tooltip"),
+
+                                _ => String::new()
+                            }
+
+                            None => String::new()
+                        })
+                    }
+                }
             },
 
             add = &adw::PreferencesGroup {
