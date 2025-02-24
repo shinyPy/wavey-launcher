@@ -134,29 +134,29 @@ impl SimpleAsyncComponent for GeneralApp {
                 }
             },
 
-            // add = &adw::PreferencesGroup {
-            //     #[watch]
-            //     set_visible: model.style == LauncherStyle::Classic,
+            add = &adw::PreferencesGroup {
+                #[watch]
+                set_visible: model.style == LauncherStyle::Classic,
 
-            //     adw::ActionRow {
-            //         set_title: &tr!("update-background"),
-            //         set_subtitle: &tr!("update-background-description"),
+                adw::ActionRow {
+                    set_title: &tr!("update-background"),
+                    set_subtitle: &tr!("update-background-description"),
 
-            //         add_suffix = &gtk::Switch {
-            //             set_valign: gtk::Align::Center,
-            //             set_active: !KEEP_BACKGROUND_FILE.exists(),
+                    add_suffix = &gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        set_active: !KEEP_BACKGROUND_FILE.exists(),
 
-            //             connect_state_notify => |switch| {
-            //                 #[allow(unused_must_use)]
-            //                 if switch.is_active() {
-            //                     std::fs::remove_file(KEEP_BACKGROUND_FILE.as_path());
-            //                 } else {
-            //                     std::fs::write(KEEP_BACKGROUND_FILE.as_path(), "");
-            //                 }
-            //             }
-            //         }
-            //     }
-            // },
+                        connect_state_notify => |switch| {
+                            #[allow(unused_must_use)]
+                            if switch.is_active() {
+                                std::fs::remove_file(KEEP_BACKGROUND_FILE.as_path());
+                            } else {
+                                std::fs::write(KEEP_BACKGROUND_FILE.as_path(), "");
+                            }
+                        }
+                    }
+                }
+            },
 
             add = &adw::PreferencesGroup {
                 set_title: &tr!("general"),
