@@ -1,7 +1,6 @@
 use std::process::Command;
 
 use anime_launcher_sdk::anime_game_core::installer::downloader::Downloader;
-// use anime_launcher_sdk::anime_game_core::minreq;
 
 use md5::{Md5, Digest};
 
@@ -12,36 +11,11 @@ pub struct Background {
 }
 
 pub fn get_uri() -> String {
-    // let lang = crate::i18n::get_lang();
-
-    // if lang.language == unic_langid::langid!("zh-cn").language {
-    //     concat!("https://hyp-api.", "mi", "ho", "yo", ".com/hyp/hyp-connect/api/getAllGameBasicInfo?launcher_id=jGHBHlcOq1").to_owned()
-    // }
-
-    // else {
     concat!("https://wuther", "ingwav", "es.kur", "ogames.com/website-preface/video/bg/bg-poster.png").to_owned()
-    // }
 }
 
 #[cached::proc_macro::cached(result)]
 pub fn get_background_info() -> anyhow::Result<Background> {
-    // let background = minreq::get(get_uri()).send()?.as_bytes();
-
-    // let uri = json["data"]["game_info_list"].as_array()
-    //     .ok_or_else(|| anyhow::anyhow!("Failed to list games in the backgrounds API"))?
-    //     .iter()
-    //     .find(|game| {
-    //         match game["game"]["biz"].as_str() {
-    //             Some(biz) => biz.starts_with("hkrpg_"),
-    //             _ => false
-    //         }
-    //     })
-    //     .ok_or_else(|| anyhow::anyhow!("Failed to find the game in the backgrounds API"))?["backgrounds"]
-    //     .as_array()
-    //     .and_then(|backgrounds| backgrounds.iter().next())
-    //     .and_then(|background| background["background"]["url"].as_str())
-    //     .ok_or_else(|| anyhow::anyhow!("Failed to get background picture url"))?
-    //     .to_string();
     let uri = get_uri();
 
     let hash = uri.split('/')
