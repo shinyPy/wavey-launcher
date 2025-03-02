@@ -257,7 +257,7 @@ impl SimpleAsyncComponent for GeneralApp {
                         set_css_classes: match model.game_diff.as_ref() {
                             Some(diff) => match diff {
                                 VersionDiff::Latest { .. }       => &["success"],
-                                VersionDiff::Outdated { .. }     => &["error"],
+                                VersionDiff::Outdated { .. }     => &["warning"],
                                 VersionDiff::NotInstalled { .. } => &[]
                             }
 
@@ -269,8 +269,9 @@ impl SimpleAsyncComponent for GeneralApp {
                             Some(diff) => match diff {
                                 VersionDiff::Latest { .. } => String::new(),
 
-                                VersionDiff::Outdated { latest, ..} => tr!("game-outdated", {
-                                    "latest" = latest.to_string()
+                                VersionDiff::Outdated { current, latest, ..} => tr!("game-update-available", {
+                                    "old" = current.to_string(),
+                                    "new" = latest.to_string()
                                 }),
 
                                 VersionDiff::NotInstalled { .. } => String::new()
