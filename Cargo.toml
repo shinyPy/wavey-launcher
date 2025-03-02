@@ -18,8 +18,8 @@ opt-level = "s"
 glib-build-tools = "0.20"
 
 [dependencies.anime-launcher-sdk]
-git = "https://github.com/literallyfiro/anime-launcher-sdk"
-branch = "main"
+git = "https://github.com/an-anime-team/anime-launcher-sdk"
+tag = "1.27.0"
 features = ["all", "wuwa", "wuwa-patch"]
 
 # path = "../anime-launcher-sdk" # ! for dev purposes only
@@ -36,7 +36,7 @@ whatadistro = "0.1.0"
 serde_json = "1.0"
 anyhow = "1.0"
 lazy_static = "1.5.0"
-cached = { version = "0.51", features = ["proc_macro"] }
+cached = { version = "0.53", features = ["proc_macro"] }
 md-5 = { version = "0.10", features = ["asm"] }
 enum-ordinalize = "4.3"
 

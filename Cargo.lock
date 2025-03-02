@@ -72,13 +72,13 @@ checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
 name = "anime-game-core"
-version = "1.28.0"
-source = "git+https://github.com/literallyfiro/anime-game-core?branch=main#9502f5ae8518c44f5db53cf1811381034e317dc7"
+version = "1.29.0"
+source = "git+https://github.com/an-anime-team/anime-game-core?tag=1.29.0#89e7ae42903d70cb01c7556327e7e8556ca8afa6"
 dependencies = [
  "anyhow",
  "brotli-decompressor",
  "bzip2",
- "cached 0.53.1",
+ "cached",
  "dns-lookup",
  "flate2",
  "fs_extra",
@@ -98,12 +98,12 @@ dependencies = [
 
 [[package]]
 name = "anime-launcher-sdk"
-version = "1.26.0"
-source = "git+https://github.com/literallyfiro/anime-launcher-sdk?branch=main#e66a11cace8769f90fef932ebd1dd8d428da8a1c"
+version = "1.27.0"
+source = "git+https://github.com/an-anime-team/anime-launcher-sdk?tag=1.27.0#f0c763bdb4038dfe353f255194c5038f34240141"
 dependencies = [
  "anime-game-core",
  "anyhow",
- "cached 0.53.1",
+ "cached",
  "enum-ordinalize",
  "lazy_static",
  "md-5",
@@ -489,44 +489,17 @@ dependencies = [
 
 [[package]]
 name = "cached"
-version = "0.51.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0feb64151eed3da6107fddd2d717a6ca4b9dbd74e43784c55c841d1abfe5a295"
-dependencies = [
- "ahash",
- "cached_proc_macro 0.21.0",
- "cached_proc_macro_types",
- "hashbrown",
- "instant",
- "once_cell",
- "thiserror",
-]
-
-[[package]]
-name = "cached"
 version = "0.53.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4d73155ae6b28cf5de4cfc29aeb02b8a1c6dab883cb015d15cd514e42766846"
 dependencies = [
  "ahash",
- "cached_proc_macro 0.23.0",
+ "cached_proc_macro",
  "cached_proc_macro_types",
  "hashbrown",
  "once_cell",
  "thiserror",
  "web-time",
-]
-
-[[package]]
-name = "cached_proc_macro"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "771aa57f3b17da6c8bcacb187bb9ec9bc81c8160e72342e67c329e0e1651a669"
-dependencies = [
- "darling",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -1582,15 +1555,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
 dependencies = [
  "generic-array",
-]
-
-[[package]]
-name = "instant"
-version = "0.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0242819d153cba4b4b05a5a8f2a7e9bbf97b6055b2a002b395c96b5ff3c0222"
-dependencies = [
- "cfg-if",
 ]
 
 [[package]]
@@ -3174,7 +3138,7 @@ version = "1.0.1"
 dependencies = [
  "anime-launcher-sdk",
  "anyhow",
- "cached 0.51.4",
+ "cached",
  "enum-ordinalize",
  "fluent-templates",
  "glib-build-tools",
