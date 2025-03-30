@@ -2,9 +2,13 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use relm4::prelude::*;
+use std::sync::{Arc, Mutex};
 
 use anime_launcher_sdk::config::ConfigExt;
 use anime_launcher_sdk::wuwa::config::{Config, Schema};
+
+use anime_launcher_sdk::discord_rpc::DiscordRpc;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anime_launcher_sdk::wuwa::states::LauncherState;
 use anime_launcher_sdk::wuwa::consts::*;
@@ -40,6 +44,7 @@ pub fn is_ready() -> bool {
 }
 
 lazy_static::lazy_static! {
+    pub static ref DISCORD_RPC_INSTANCE: Arc<Mutex<Option<DiscordRpc>>> = Arc::new(Mutex::new(None));
     /// Config loaded on the app's start. Use `Config::get()` to get up to date config instead.
     /// This one is used to prepare some launcher UI components on start
     pub static ref CONFIG: Schema = Config::get().expect("Failed to load config");
@@ -103,6 +108,25 @@ lazy_static::lazy_static! {
 }
 
 fn main() -> anyhow::Result<()> {
+
+     // Initialize the configuration
+     if let Ok(mut config) = Config::get() {
+        // Set the start timestamp to the current time
+        let start_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs() as i64;
+        config.launcher.discord_rpc.start_timestamp = Some(start_time);
+
+        // Reset the end timestamp
+        config.launcher.discord_rpc.end_timestamp = None;
+
+        // Update the configuration
+        Config::update(config);
+    } else {
+        eprintln!("Failed to get config");
+    }
+
     // Setup custom panic handler
     human_panic::setup_panic!(human_panic::metadata!());
 

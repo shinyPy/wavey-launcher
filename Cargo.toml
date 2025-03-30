@@ -18,8 +18,8 @@ opt-level = "s"
 glib-build-tools = "0.20"
 
 [dependencies.anime-launcher-sdk]
-git = "https://github.com/an-anime-team/anime-launcher-sdk"
-tag = "1.27.0"
+git = "https://github.com/shinyPy/anime-launcher-sdk"
+tag = "1.27.2"
 features = ["all", "wuwa", "wuwa-patch"]
 
 # path = "../anime-launcher-sdk" # ! for dev purposes only

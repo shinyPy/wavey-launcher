@@ -61,3 +61,5 @@ window-mode = Window Mode
 borderless = Borderless
 popup = Popup
 fullscreen = Fullscreen
+timestamp = timestamp
+timestamp-description = Start the timestamp when the game launch.

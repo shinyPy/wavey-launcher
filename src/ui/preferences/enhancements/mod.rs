@@ -7,6 +7,7 @@ use relm4::factory::{
 };
 
 use adw::prelude::*;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anime_launcher_sdk::config::ConfigExt;
 use anime_launcher_sdk::wuwa::config::Config;
@@ -14,6 +15,7 @@ use anime_launcher_sdk::config::schema_blanks::prelude::*;
 
 use anime_launcher_sdk::anime_game_core::installer::downloader::Downloader;
 
+use anime_launcher_sdk::discord_rpc::DiscordRpc;
 use anime_launcher_sdk::is_available;
 
 use enum_ordinalize::Ordinalize;
@@ -65,6 +67,11 @@ impl AsyncFactoryComponent for DiscordRpcIcon {
             },
 
             set_activatable: true,
+
+            connect_activated[sender, index] => move |_| {
+                sender.output(EnhancementsAppMsg::SetDiscordRpcIcon(index.clone()))
+                    .unwrap();
+            }
         }
     }
 
@@ -90,6 +97,8 @@ pub struct EnhancementsApp {
 #[derive(Debug)]
 pub enum EnhancementsAppMsg {
     SetGamescopeParent,
+
+    SetDiscordRpcIcon(DynamicIndex),
 
     OpenGamescope,
     OpenMainPage,
@@ -501,6 +510,105 @@ impl SimpleAsyncComponent for EnhancementsApp {
                     }
                 }
             },
+
+            add = &adw::PreferencesGroup {
+                set_title: &tr!("discord-rpc"),
+
+                adw::ActionRow {
+                    set_title: &tr!("enabled"),
+                    set_subtitle: &tr!("discord-rpc-description"),
+
+                    add_suffix = &gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        set_active: CONFIG.launcher.discord_rpc.enabled,
+
+                        connect_state_notify => |switch| {
+                            if is_ready() {
+                                if let Ok(mut config) = Config::get() {
+                                    config.launcher.discord_rpc.enabled = switch.is_active();
+
+                                    Config::update(config);
+                                }
+                            }
+                        }
+                    }
+                },
+
+                #[local_ref]
+                discord_rpc_icons -> adw::ExpanderRow {
+                    set_title: &tr!("icon")
+                },
+
+                adw::EntryRow {
+                    set_title: &tr!("title"),
+                    set_text: &CONFIG.launcher.discord_rpc.title,
+
+                    connect_changed: |row| {
+                        if is_ready() {
+                            if let Ok(mut config) = Config::get() {
+                                config.launcher.discord_rpc.title = row.text().to_string();
+
+                                Config::update(config);
+                            }
+                        }
+                    }
+                },
+
+                adw::EntryRow {
+                    set_title: &tr!("description"),
+                    set_text: &CONFIG.launcher.discord_rpc.subtitle,
+
+                    connect_changed: |row| {
+                        if is_ready() {
+                            if let Ok(mut config) = Config::get() {
+                                config.launcher.discord_rpc.subtitle = row.text().to_string();
+
+                                Config::update(config);
+                            }
+                        }
+                    }
+                },
+
+                adw::ActionRow {
+                    set_title: &tr!("timestamp"),
+                    set_subtitle: &tr!("timestamp-description"),
+
+                    add_suffix = &gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        set_active: CONFIG.launcher.discord_rpc.start_timestamp.is_some(),
+
+                        connect_state_notify => move |switch| {
+                            if is_ready() {
+                                if let Ok(mut config) = Config::get() {
+                                    if switch.is_active() {
+                                        // Set the start timestamp to the current time
+                                        let start_time = SystemTime::now()
+                                            .duration_since(UNIX_EPOCH)
+                                            .expect("Time went backwards")
+                                            .as_secs() as i64;
+                                        config.launcher.discord_rpc.start_timestamp = Some(start_time);
+                                        config.launcher.discord_rpc.end_timestamp = None;
+                                    } else {
+                                        // Clear timestamps
+                                        config.launcher.discord_rpc.start_timestamp = None;
+                                        config.launcher.discord_rpc.end_timestamp = None;
+                                    }
+
+                                    // Update the configuration
+                                    Config::update(config);
+
+                                    // Reconnect the Discord RPC
+                                    if let Some(discord_rpc) = DISCORD_RPC_INSTANCE.lock().unwrap().as_ref() {
+                                        if let Err(err) = discord_rpc.reconnect() {
+                                            eprintln!("Failed to reconnect Discord RPC: {:?}", err);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+            },
         },
 
         #[local_ref]
@@ -537,51 +645,69 @@ impl SimpleAsyncComponent for EnhancementsApp {
                 .forward(sender.input_sender(), std::convert::identity)
         };
 
+        // Load Discord RPC icons
+        match DiscordRpc::get_assets(CONFIG.launcher.discord_rpc.app_id) {
+            Ok(icons) => {
+                for icon in icons {
+                    let cache_file = CACHE_FOLDER
+                        .join("discord-rpc")
+                        .join(&icon.name)
+                        .join(&icon.id);
+
+                    // Workaround for old folder structure (pre 3.7.3)
+                    let old_path = CACHE_FOLDER.join("discord-rpc").join(&icon.name);
+
+                    if old_path.exists() {
+                        if let Ok(metadata) = old_path.metadata() {
+                            if metadata.is_file() {
+                                std::fs::remove_file(old_path).expect("Failed to delete old discord rpc icon");
+                            }
+                        }
+                    }
+
+                    if !cache_file.exists() {
+                        std::thread::spawn(move || {
+                            Downloader::new(icon.get_uri())
+                                .expect("Failed to init Discord RPC icon downloader")
+                                .with_continue_downloading(false)
+                                .with_free_space_check(false)
+                                .download(cache_file, |_, _| {})
+                                .expect("Failed to download Discord RPC icon");
+                        });
+                    }
+                    // Add icons that are already downloaded
+                    else {
+                        let check_button = gtk::CheckButton::new();
+
+                        check_button.set_group(Some(&model.discord_rpc_root_check_button));
+
+                        if CONFIG.launcher.discord_rpc.icon == icon.name {
+                            check_button.set_active(true);
+                        }
+
+                        model.discord_rpc_icons.guard().push_back(DiscordRpcIcon {
+                            check_button,
+
+                            name: icon.name.clone(),
+                            path: cache_file.clone()
+                        });
+                    }
+                }
+            }
+
+            Err(err) => sender.input(EnhancementsAppMsg::Toast {
+                title: tr!("discord-rpc-icons-fetch-failed"),
+                description: Some(err.to_string())
+            })
+        }
+
+        let discord_rpc_icons = model.discord_rpc_icons.widget();
+
         let sandbox_page = model.sandbox_page.widget();
         let environment_page = model.environment_page.widget();
 
         let widgets = view_output!();
 
         AsyncComponentParts { model, widgets }
-    }
-
-    async fn update(&mut self, msg: Self::Input, sender: AsyncComponentSender<Self>) {
-        match msg {
-            EnhancementsAppMsg::SetGamescopeParent => unsafe {
-                self.gamescope.widget().set_transient_for(super::main::PREFERENCES_WINDOW.as_ref());
-            }
-
-            EnhancementsAppMsg::OpenGamescope => {
-                self.gamescope.widget().present();
-            }
-
-            EnhancementsAppMsg::OpenMainPage => unsafe {
-                PREFERENCES_WINDOW.as_ref()
-                    .unwrap_unchecked()
-                    .widget()
-                    .pop_subpage();
-            }
-
-            EnhancementsAppMsg::OpenSandboxSettingsPage => unsafe {
-                PREFERENCES_WINDOW.as_ref()
-                    .unwrap_unchecked()
-                    .widget()
-                    .push_subpage(self.sandbox_page.widget());
-            }
-
-            EnhancementsAppMsg::OpenEnvironmentSettingsPage => unsafe {
-                PREFERENCES_WINDOW.as_ref()
-                    .unwrap_unchecked()
-                    .widget()
-                    .push_subpage(self.environment_page.widget());
-            }
-
-            EnhancementsAppMsg::Toast { title, description } => {
-                sender.output(PreferencesAppMsg::Toast {
-                    title,
-                    description
-                }).unwrap();
-            }
-        }
     }
 }
